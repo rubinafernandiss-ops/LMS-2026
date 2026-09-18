@@ -1,0 +1,24 @@
+# Deploy the USAII LMS as a Node web service (Render).
+# The LMS is not a static site: it has an Express API and a JSON database,
+# so it needs a Node host. Netlify and GitHub Pages serve files only.
+services:
+  - type: web
+    name: usaii-lms
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npx tsx server/index.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Sign-in tokens are signed with this. Set your own long random string.
+      - key: SESSION_SECRET
+        generateValue: true
+    # Keeps learner data across restarts. Remove this block on the free plan;
+    # without it the demo data resets whenever the service restarts.
+    disk:
+      name: lms-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
